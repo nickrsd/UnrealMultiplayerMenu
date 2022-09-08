@@ -39,4 +39,6 @@ private:
 
 	void MenuTeardown();
 
+	// Subsystem that handles all online session functionality
+	class UMultiplayerSessionSubsystem* MultiplayerSessionSubsystem;
 };

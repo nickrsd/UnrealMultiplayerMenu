@@ -2,6 +2,7 @@
 
 
 #include "Menu.h"
+#include "MultiplayerSessionSubsystem.h"
 #include "Components/Button.h"
 
 void UMenu::MenuSetup()
@@ -9,7 +10,7 @@ void UMenu::MenuSetup()
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
-	
+
 	UWorld* World = GetWorld();
 	if (World) {
 		APlayerController* PlayerController = World->GetFirstPlayerController();
@@ -22,7 +23,14 @@ void UMenu::MenuSetup()
 			PlayerController->SetInputMode(InputModeSetting);
 			PlayerController->SetShowMouseCursor(true);
 		}
-	}	
+	}
+
+	UGameInstance* GameInstance = GetGameInstance();
+	if (GameInstance)
+	{
+		MultiplayerSessionSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionSubsystem>();
+	}
+
 }
 
 bool UMenu::Initialize()
@@ -51,12 +59,12 @@ void UMenu::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
 {
 	MenuTeardown();
 	Super::OnLevelRemovedFromWorld(InLevel, InWorld);
-	
+
 }
 
 void UMenu::onHostButtonClicked()
-{		
-	
+{
+
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(
@@ -65,6 +73,16 @@ void UMenu::onHostButtonClicked()
 			FColor::Yellow,
 			FString(TEXT("Host Button Clicked"))
 		);
+	}
+
+	if (MultiplayerSessionSubsystem) {
+		MultiplayerSessionSubsystem->CreateSession(8, FString(TEXT("FreeForAll")));
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel("Game/ThirdPerson/Maps/Lobby?listen");
+
+		}
 	}
 }
 
@@ -90,6 +108,6 @@ void UMenu::MenuTeardown()
 		APlayerController* PlayerController = World->GetFirstPlayerController();
 		FInputModeGameOnly InputModeSetting;
 		PlayerController->SetInputMode(InputModeSetting);
-		PlayerController->SetShowMouseCursor(false);	
+		PlayerController->SetShowMouseCursor(false);
 	}
 }
