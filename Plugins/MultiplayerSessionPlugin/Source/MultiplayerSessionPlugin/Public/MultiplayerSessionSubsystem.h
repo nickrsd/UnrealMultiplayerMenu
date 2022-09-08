@@ -14,25 +14,10 @@ UCLASS()
 class MULTIPLAYERSESSIONPLUGIN_API UMultiplayerSessionSubsystem : public UGameInstanceSubsystem
 {
 	GENERATED_BODY()
-		
-/* 
-	TODO:
-	CreateSession
-	FindSessions
-	JoinSession
-	StartSession
-	DestroySession
-
-	construct the delegate
-	bind it to our function 
-	add to the delegate list
-		add on create session complete delegate_ handle
-	clear from delegate list
-
-*/
 
 public:
 	UMultiplayerSessionSubsystem();
+	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 
 	// API below handles session functionality
 	void CreateSession(int32 NumPublicConnections, FString MatchType);
