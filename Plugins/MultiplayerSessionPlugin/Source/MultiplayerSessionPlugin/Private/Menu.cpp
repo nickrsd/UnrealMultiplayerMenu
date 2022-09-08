@@ -22,9 +22,7 @@ void UMenu::MenuSetup()
 			PlayerController->SetInputMode(InputModeSetting);
 			PlayerController->SetShowMouseCursor(true);
 		}
-	}
-
-		
+	}	
 }
 
 bool UMenu::Initialize()
@@ -49,8 +47,16 @@ bool UMenu::Initialize()
 	return true;
 }
 
-void UMenu::onHostButtonClicked()
+void UMenu::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
 {
+	MenuTeardown();
+	Super::OnLevelRemovedFromWorld(InLevel, InWorld);
+	
+}
+
+void UMenu::onHostButtonClicked()
+{		
+	
 	if (GEngine)
 	{
 		GEngine->AddOnScreenDebugMessage(
@@ -72,5 +78,18 @@ void UMenu::onJoinButtonClicked()
 			FColor::Yellow,
 			FString(TEXT("Join Button Clicked"))
 		);
+	}
+}
+
+void UMenu::MenuTeardown()
+{
+	RemoveFromParent();
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		FInputModeGameOnly InputModeSetting;
+		PlayerController->SetInputMode(InputModeSetting);
+		PlayerController->SetShowMouseCursor(false);	
 	}
 }

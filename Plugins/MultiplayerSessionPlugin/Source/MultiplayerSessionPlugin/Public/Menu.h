@@ -21,7 +21,8 @@ public:
 protected: 
 	
 	virtual bool Initialize() override;
-
+	virtual void OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld) override;
+	
 private: 
 	
 	UPROPERTY(meta = (BindWidget))
@@ -35,4 +36,7 @@ private:
 
 	UFUNCTION()
 	void onJoinButtonClicked();
+
+	void MenuTeardown();
+
 };
