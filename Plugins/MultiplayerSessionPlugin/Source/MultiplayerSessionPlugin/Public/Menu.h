@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "Menu.generated.h"
 
 /**
@@ -25,6 +26,10 @@ protected:
 
 	UFUNCTION()
 	void OnCreateSession(bool bWasSuccessful);
+	void OnFindSession(const TArray<FOnlineSessionSearchResult>& SearchResults, bool bWasSuccessful);
+	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
+	void OnStartSession(bool bWasSuccessful);
+	void OnDestroySession(bool bWasSuccessful);
 	
 private: 
 	
@@ -35,10 +40,10 @@ private:
 	UButton* JoinButton;
 
 	UFUNCTION()
-	void onHostButtonClicked();
+	void OnHostButtonClicked();
 
 	UFUNCTION()
-	void onJoinButtonClicked();
+	void OnJoinButtonClicked();
 
 	void MenuTeardown();
 

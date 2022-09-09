@@ -3,6 +3,7 @@
 
 #include "Menu.h"
 #include "MultiplayerSessionSubsystem.h"
+#include "OnlineSubsystem.h"
 #include "Components/Button.h"
 
 void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
@@ -36,6 +37,10 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 
 	if (MultiplayerSessionSubsystem) {
 		MultiplayerSessionSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &UMenu::OnCreateSession);
+		MultiplayerSessionSubsystem->MultiplayerOnFindSessionComplete.AddUObject(this, &UMenu::OnFindSession);
+		MultiplayerSessionSubsystem->MultiplayerOnJoinSessionComplete.AddUObject(this, &UMenu::OnJoinSession);
+		MultiplayerSessionSubsystem->MultiplayerOnStartSessionComplete.AddDynamic(this, &UMenu::OnStartSession);
+		MultiplayerSessionSubsystem->MultiplayerOnDestroySessionComplete.AddDynamic(this, &UMenu::OnDestroySession);
 	}
 }
 
@@ -51,11 +56,11 @@ bool UMenu::Initialize()
 	// Constructor is too early, have to wait until widget fully setup before creating bindings
 	if (HostButton)
 	{
-		HostButton->OnClicked.AddDynamic(this, &UMenu::onHostButtonClicked);
+		HostButton->OnClicked.AddDynamic(this, &UMenu::OnHostButtonClicked);
 	}
 	if (JoinButton)
 	{
-		JoinButton->OnClicked.AddDynamic(this, &UMenu::onJoinButtonClicked);
+		JoinButton->OnClicked.AddDynamic(this, &UMenu::OnJoinButtonClicked);
 	}
 
 	return true;
@@ -68,14 +73,14 @@ void UMenu::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
 
 }
 
-void UMenu::onHostButtonClicked()
+void UMenu::OnHostButtonClicked()
 {
 	if (MultiplayerSessionSubsystem) {
 		MultiplayerSessionSubsystem->CreateSession(NumPublicConnections, MatchType);
 	}
 }
 
-void UMenu::onJoinButtonClicked()
+void UMenu::OnJoinButtonClicked()
 {
 	if (GEngine)
 	{
@@ -85,6 +90,9 @@ void UMenu::onJoinButtonClicked()
 			FColor::Yellow,
 			FString(TEXT("Join Button Clicked"))
 		);
+	}
+	if (MultiplayerSessionSubsystem) {
+		MultiplayerSessionSubsystem->FindSessions(20);
 	}
 }
 
@@ -129,6 +137,68 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 			);
 		}
 	}
+}
+
+void UMenu::OnFindSession(const TArray<FOnlineSessionSearchResult>& SearchResults, bool bWasSuccessful)
+{
+
+	if (MultiplayerSessionSubsystem == nullptr)
+	{
+		return;
+	}
+	
+	// select most appropriate match 
+	for (auto Result : SearchResults)
+	{
+		FString Id = Result.GetSessionIdStr();
+		FString User = Result.Session.OwningUserName;
+		FString SettingsMatchType;
+		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsMatchType);
+		
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Cyan,
+				FString::Printf(TEXT("Id: %s, User: %s"), *Id, *User)
+			);
+		}
+		if (SettingsMatchType == MatchType) 
+		{
+			MultiplayerSessionSubsystem->JoinSession(Result);
+			return;
+		}
+		
+	}
+}
+
+void UMenu::OnJoinSession(EOnJoinSessionCompleteResult::Type Result)
+{
+	IOnlineSubsystem* Subsystem = IOnlineSubsystem::Get();
+	if (Subsystem)
+	{
+		IOnlineSessionPtr SessionInterface = Subsystem->GetSessionInterface();
+		if (SessionInterface.IsValid())
+		{
+			FString Address;
+			SessionInterface->GetResolvedConnectString(NAME_GameSession, Address);
+
+			APlayerController* PlayerController = GetGameInstance()->GetFirstLocalPlayerController();
+			if (PlayerController)
+			{
+				PlayerController->ClientTravel(Address, ETravelType::TRAVEL_Absolute);
+			}
+		}
+	}
+}
+
+void UMenu::OnStartSession(bool bWasSuccessful)
+{
+}
+
+void UMenu::OnDestroySession(bool bWasSuccessful)
+{
 }
 
 void UMenu::MenuTeardown()
