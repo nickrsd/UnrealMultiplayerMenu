@@ -5,11 +5,14 @@
 #include "MultiplayerSessionSubsystem.h"
 #include "Components/Button.h"
 
-void UMenu::MenuSetup()
+void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 {
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
 	bIsFocusable = true;
+
+	NumPublicConnections = NumberOfPublicConnections;
+	MatchType = TypeOfMatch;
 
 	UWorld* World = GetWorld();
 	if (World) {
@@ -31,6 +34,9 @@ void UMenu::MenuSetup()
 		MultiplayerSessionSubsystem = GameInstance->GetSubsystem<UMultiplayerSessionSubsystem>();
 	}
 
+	if (MultiplayerSessionSubsystem) {
+		MultiplayerSessionSubsystem->MultiplayerOnCreateSessionComplete.AddDynamic(this, &UMenu::OnCreateSession);
+	}
 }
 
 bool UMenu::Initialize()
@@ -64,25 +70,8 @@ void UMenu::OnLevelRemovedFromWorld(ULevel* InLevel, UWorld* InWorld)
 
 void UMenu::onHostButtonClicked()
 {
-
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Yellow,
-			FString(TEXT("Host Button Clicked"))
-		);
-	}
-
 	if (MultiplayerSessionSubsystem) {
-		MultiplayerSessionSubsystem->CreateSession(8, FString(TEXT("FreeForAll")));
-		UWorld* World = GetWorld();
-		if (World)
-		{
-			World->ServerTravel("Game/ThirdPerson/Maps/Lobby?listen");
-
-		}
+		MultiplayerSessionSubsystem->CreateSession(NumPublicConnections, MatchType);
 	}
 }
 
@@ -96,6 +85,49 @@ void UMenu::onJoinButtonClicked()
 			FColor::Yellow,
 			FString(TEXT("Join Button Clicked"))
 		);
+	}
+}
+
+void UMenu::OnCreateSession(bool bWasSuccessful)
+{
+	if (GEngine)
+	{
+		GEngine->AddOnScreenDebugMessage(
+			-1,
+			15.f,
+			FColor::Yellow,
+			FString(TEXT("onCreateSession called"))
+		);
+	}
+	if (bWasSuccessful)
+	{
+		UWorld* World = GetWorld();
+		if (World)
+		{
+			World->ServerTravel("/Game/ThirdPerson/Maps/Lobby?listen");
+
+			if (GEngine)
+			{
+				GEngine->AddOnScreenDebugMessage(
+					-1,
+					15.f,
+					FColor::Yellow,
+					FString(TEXT("Session Created Successfully"))
+				);
+			}
+		}
+	}
+	else
+	{
+		if (GEngine)
+		{
+			GEngine->AddOnScreenDebugMessage(
+				-1,
+				15.f,
+				FColor::Red,
+				FString(TEXT("Session Creation Failed"))
+			);
+		}
 	}
 }
 
