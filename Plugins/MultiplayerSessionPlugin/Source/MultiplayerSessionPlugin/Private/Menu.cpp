@@ -98,31 +98,12 @@ void UMenu::OnJoinButtonClicked()
 
 void UMenu::OnCreateSession(bool bWasSuccessful)
 {
-	if (GEngine)
-	{
-		GEngine->AddOnScreenDebugMessage(
-			-1,
-			15.f,
-			FColor::Yellow,
-			FString(TEXT("onCreateSession called"))
-		);
-	}
 	if (bWasSuccessful)
 	{
 		UWorld* World = GetWorld();
 		if (World)
 		{
 			World->ServerTravel("/Game/ThirdPerson/Maps/Lobby?listen");
-
-			if (GEngine)
-			{
-				GEngine->AddOnScreenDebugMessage(
-					-1,
-					15.f,
-					FColor::Yellow,
-					FString(TEXT("Session Created Successfully"))
-				);
-			}
 		}
 	}
 	else
@@ -155,15 +136,6 @@ void UMenu::OnFindSession(const TArray<FOnlineSessionSearchResult>& SearchResult
 		FString SettingsMatchType;
 		Result.Session.SessionSettings.Get(FName("MatchType"), SettingsMatchType);
 		
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(
-				-1,
-				15.f,
-				FColor::Cyan,
-				FString::Printf(TEXT("Id: %s, User: %s"), *Id, *User)
-			);
-		}
 		if (SettingsMatchType == MatchType) 
 		{
 			MultiplayerSessionSubsystem->JoinSession(Result);

@@ -21,12 +21,6 @@ UMultiplayerSessionSubsystem::UMultiplayerSessionSubsystem():
 
 void UMultiplayerSessionSubsystem::CreateSession(int32 NumPublicConnections, FString MatchType)
 {
-	// kill existing session if present, then make a new one
-	// get player or world
-	// go to lobby
-	// add create session complete to delegate list
-
-	// kill existing session if present, then make a new one
 	if (!SessionInterface.IsValid())
 	{
 		return;
