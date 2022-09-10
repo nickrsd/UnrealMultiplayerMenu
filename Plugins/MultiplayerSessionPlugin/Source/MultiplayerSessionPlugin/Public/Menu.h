@@ -17,7 +17,7 @@ class MULTIPLAYERSESSIONPLUGIN_API UMenu : public UUserWidget
 	
 public: 
 	UFUNCTION(BlueprintCallable)
-	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")));
+	void MenuSetup(int32 NumberOfPublicConnections = 4, FString TypeOfMatch = FString(TEXT("FreeForAll")), FString LobbyPath = FString(TEXT("/Game/ThirdPerson/Maps/Lobby")));
 
 protected: 
 	
@@ -39,11 +39,17 @@ private:
 	UPROPERTY(meta = (BindWidget))
 	UButton* JoinButton;
 
+	UPROPERTY(meta = (BindWidget))
+	UButton* LeaveButton;
+
 	UFUNCTION()
 	void OnHostButtonClicked();
 
 	UFUNCTION()
 	void OnJoinButtonClicked();
+
+	UFUNCTION()
+	void OnLeaveButtonClicked();
 
 	void MenuTeardown();
 
@@ -52,4 +58,5 @@ private:
 	
 	int32 NumPublicConnections{ 4 };
 	FString MatchType{ TEXT("FreeForAll") };
+	FString PathToLobby{TEXT("")};
 };
