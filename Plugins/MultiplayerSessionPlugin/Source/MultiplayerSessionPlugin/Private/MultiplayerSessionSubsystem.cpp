@@ -109,7 +109,21 @@ void UMultiplayerSessionSubsystem::JoinSession(const FOnlineSessionSearchResult&
 
 void UMultiplayerSessionSubsystem::StartSession()
 {
-	//	FMultiplayerOnStartSessionComplete MultiplayerOnStartSessionComplete;
+	if (!SessionInterface)
+	{
+		MultiplayerOnStartSessionComplete.Broadcast(false);
+		return;
+
+	}
+
+	StartSessionCompleteDelegateHandle = SessionInterface->AddOnStartSessionCompleteDelegate_Handle(StartSessionCompleteDelegate);
+
+	bool bDidStartSession = SessionInterface->StartSession(NAME_GameSession);
+	if (!bDidStartSession)
+	{
+		SessionInterface->ClearOnStartSessionCompleteDelegate_Handle(StartSessionCompleteDelegateHandle);
+		MultiplayerOnStartSessionComplete.Broadcast(false);
+	}
 }
 
 void UMultiplayerSessionSubsystem::DestroySession()
@@ -185,4 +199,13 @@ void UMultiplayerSessionSubsystem::OnDestroySessionComplete(FName SessionName, b
 
 void UMultiplayerSessionSubsystem::OnStartSessionComplete(FName SessionName, bool bWasSuccessful)
 {
+	if (SessionInterface)
+	{
+		SessionInterface->ClearOnStartSessionCompleteDelegate_Handle(StartSessionCompleteDelegateHandle);
+	}
+
+	if (bWasSuccessful)
+	{
+		MultiplayerOnStartSessionComplete.Broadcast(bWasSuccessful);
+	}
 }
