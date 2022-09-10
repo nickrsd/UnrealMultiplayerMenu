@@ -58,6 +58,10 @@ protected:
 
 private: 
 
+	bool bCreateSessionOnDestroy{ false };
+	int32 LastNumPublicConnections;
+	FString LastMatchType;
+
 	// interface for unreal's online subsystem
 	IOnlineSessionPtr SessionInterface;
 

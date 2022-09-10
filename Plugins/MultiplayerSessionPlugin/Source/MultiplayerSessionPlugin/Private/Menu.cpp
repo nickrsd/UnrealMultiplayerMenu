@@ -6,7 +6,7 @@
 #include "OnlineSubsystem.h"
 #include "Components/Button.h"
 
-void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
+void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch, FString LobbyPath)
 {
 	AddToViewport();
 	SetVisibility(ESlateVisibility::Visible);
@@ -14,6 +14,7 @@ void UMenu::MenuSetup(int32 NumberOfPublicConnections, FString TypeOfMatch)
 
 	NumPublicConnections = NumberOfPublicConnections;
 	MatchType = TypeOfMatch;
+	PathToLobby = FString::Printf(TEXT("%s?listen"), *LobbyPath);
 
 	UWorld* World = GetWorld();
 	if (World) {
@@ -63,6 +64,11 @@ bool UMenu::Initialize()
 		JoinButton->OnClicked.AddDynamic(this, &UMenu::OnJoinButtonClicked);
 	}
 
+	if (LeaveButton)
+	{
+		JoinButton->OnClicked.AddDynamic(this, &UMenu::OnLeaveButtonClicked);
+	}
+
 	return true;
 }
 
@@ -96,6 +102,13 @@ void UMenu::OnJoinButtonClicked()
 	}
 }
 
+void UMenu::OnLeaveButtonClicked()
+{
+	if (MultiplayerSessionSubsystem) {
+		MultiplayerSessionSubsystem->DestroySession();
+	}
+}
+
 void UMenu::OnCreateSession(bool bWasSuccessful)
 {
 	if (bWasSuccessful)
@@ -103,7 +116,7 @@ void UMenu::OnCreateSession(bool bWasSuccessful)
 		UWorld* World = GetWorld();
 		if (World)
 		{
-			World->ServerTravel("/Game/ThirdPerson/Maps/Lobby?listen");
+			World->ServerTravel(PathToLobby);
 		}
 	}
 	else
@@ -172,6 +185,7 @@ void UMenu::OnStartSession(bool bWasSuccessful)
 void UMenu::OnDestroySession(bool bWasSuccessful)
 {
 }
+
 
 void UMenu::MenuTeardown()
 {
