@@ -28,7 +28,11 @@ protected:
 	void OnCreateSession(bool bWasSuccessful);
 	void OnFindSession(const TArray<FOnlineSessionSearchResult>& SearchResults, bool bWasSuccessful);
 	void OnJoinSession(EOnJoinSessionCompleteResult::Type Result);
+
+	UFUNCTION()
 	void OnStartSession(bool bWasSuccessful);
+
+	UFUNCTION()
 	void OnDestroySession(bool bWasSuccessful);
 	
 private: 
